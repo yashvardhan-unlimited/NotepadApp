@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – Notepad App</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+
+<body>
+
+    <!--
+        LEARNING NOTE: Navbar
+        ======================
+        This navbar appears on all logged-in pages.
+        "username" is passed from main.py:
+            templates.TemplateResponse("dashboard.html", {"username": user, ...})
+
+        We display it with {{ username }} — double curly braces output values.
+    -->
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand">
+            📓 Notepad<span>app</span>
+        </a>
+        <div class="navbar-right">
+            <span class="navbar-user">Hello, <strong>{{ username }}</strong></span>
+            <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">My Notes</h2>
+                <p class="page-subtitle">
+
+                    {% if notes | length == 1 %}
+                    {{ notes | length }} note
+                    {% else %}
+                    {{ notes | length }} notes
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/note/new" class="btn btn-primary">+ New Note</a>
+        </div>
+
+
+        {# LEARNING NOTE: Conditional Rendering
+            ======================================
+            If the user has no notes, show a friendly "empty state" message.
+            Otherwise, show the notes grid.
+
+            "{% if notes | length != 0 %}" is True if the list is not empty.
+            "{% else %}" runs if the list IS empty. #}
+
+        {% if notes | length != 0 %}
+
+        {#
+                LEARNING NOTE: Looping with Jinja2
+                ====================================
+                "{% for note in notes %}" loops over each note in the list.
+                Inside the loop, "note" refers to the current item.
+
+                "notes" was passed from main.py as a Python list of dicts.
+                Each dict looks like:
+                {
+                    "_id": "some_string_id",
+                    "owner": "john",
+                    "title": "My Note",
+                    "content": "Hello world...",
+                    "created": "24 Jul 2025, 03:45 PM"
+                }
+
+                We access dict values with: note.title, note.content, etc.
+                Or: note["title"] — Jinja2 supports both styles.
+            #}
+        <div class="notes-grid">
+            {% for note in notes %}
+            <div class="note-card">
+            
+                <div class="note-card-title">
+                    {{ note.title }}
+                </div>
+
+                <div class="note-card-preview">
+                    <!--
+                                Show a preview of the note content.
+                                "truncate(120)" cuts text to ~120 characters and adds "..."
+                                This is a built-in Jinja2 filter.
+                            -->
+                    {{ note.content | truncate(120) }}
+                </div>
+
+                <div class="note-card-date">
+                    🕐 {{ note.created }}
+                </div>
+
+                <div class="note-card-actions">
+                    <!--
+                                LEARNING NOTE: Dynamic URLs with note ID
+                                =========================================
+                                Each note has a unique "_id" from MongoDB.
+                                We put it in the URL so FastAPI knows WHICH note
+                                to load/edit/delete.
+
+                                URL example: /note/edit/64f3a2b1c8e3d12ab7890123
+                            -->
+                    <a href="/note/edit/{{ note._id }}" class="btn btn-secondary btn-sm">
+                        ✏ Edit
+                    </a>
+
+                    <!--
+                                LEARNING NOTE: Delete with a POST form
+                                =======================================
+                                We use a <form> for delete (not a plain link).
+
+                                Why? Because a plain <a href="..."> is a GET request.
+                                Anyone could trick you into deleting notes just by
+                                sharing a link. POST is safer for destructive actions.
+
+                                method="post" → sends a POST to /note/delete/{id}
+                                The FastAPI route @app.post("/note/delete/{note_id}")
+                                handles it.
+                            -->
+                    <form method="post" action="/note/delete/{{ note._id }}" style="display: inline;"
+                        onsubmit="return confirm('Delete this note?')">
+                        <!--
+                                    onsubmit="return confirm(...)" shows a browser
+                                    confirmation popup before actually deleting.
+                                    This is a tiny bit of JavaScript — unavoidable here
+                                    for a good user experience.
+                                    If the user clicks OK → returns true → form submits.
+                                    If they click Cancel → returns false → nothing happens.
+                                -->
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            🗑 Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty state: shown when user has zero notes -->
+        <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <h3>No notes yet!</h3>
+            <p>Start writing your first note. It only takes a second.</p>
+            <a href="/note/new" class="btn btn-primary">Create Your First Note</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

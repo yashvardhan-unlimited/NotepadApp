@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {#
+        LEARNING NOTE: Dynamic page title
+        ===================================
+        We use Jinja2 to set the page title dynamically.
+        If we're editing an existing note → show its title.
+        If we're creating a new note → show "New Note".
+
+        "{% if note %}" is True when main.py passes an existing note object.
+        "{% else %}" handles the "new note" case (note=None).
+    #}
+    <title>
+        {% if note %}Edit: {{ note.title }}{% else %}New Note{% endif %} – Notepad App
+    </title>
+
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand">
+            📓 Notepad<span>app</span>
+        </a>
+        <div class="navbar-right">
+            <span class="navbar-user">Hello, <strong>{{ username }}</strong></span>
+            <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
+        </div>
+    </nav>
+
+
+    <div class="page-wrapper">
+
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">
+                    {% if note %}Edit Note{% else %}New Note{% endif %}
+                </h2>
+                <p class="page-subtitle">
+                    {% if note %}
+                        Last saved: {{ note.created }}
+                    {% else %}
+                        Fill in the title and content below
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/dashboard" class="btn btn-secondary">← Back</a>
+        </div>
+
+
+        <div class="editor-card">
+            {#
+                LEARNING NOTE: One form, two routes
+                =====================================
+                This single editor.html is used for BOTH:
+                  1. Creating a new note (action="/note/new")
+                  2. Editing an existing note (action="/note/edit/{{ note._id }}")
+
+                We use Jinja2 to set the "action" attribute dynamically.
+                If "note" exists → post to the edit URL with the note's ID.
+                If "note" is None → post to the create URL.
+
+                FastAPI has separate @app.post() handlers for each URL.
+            #}
+            <form
+                method="post"
+                action="{% if note %}/note/edit/{{ note._id }}{% else %}/note/new{% endif %}"
+            >
+
+                <div class="form-group">
+                    <label class="form-label" for="title">Note Title</label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        class="form-input editor-title-input"
+                        placeholder="Give your note a title..."
+                        required
+                        
+                        
+                        {% if note %}value="{{ note.title }}"{% endif %}
+                    >
+                    {# LEARNING NOTE: Pre-filling the form
+                            =====================================
+                            When editing an existing note, we want the form
+                            to already contain the note's current data.
+
+                            "value=" sets the initial value of the input field.
+
+                            {% if note %}{{ note.title }}{% endif %}
+                            → If note exists, put note.title as the pre-filled value.
+                            → If it's a new note, leave value empty (no value attribute).
+                         #}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="content">Content</label>
+                    {#
+                        LEARNING NOTE: Pre-filling a textarea
+                        ======================================
+                        Textareas don't use the "value" attribute like regular inputs.
+                        Instead, you put the text BETWEEN the opening and closing tags:
+                            <textarea>your text here</textarea>
+
+                        So we do: {% if note %}{{ note.content }}{% endif %}
+                        inside the textarea tags to pre-fill it when editing.
+
+                        Note: There's no space/newline before the content
+                        to avoid adding extra whitespace at the beginning.
+                    #}
+                    <textarea
+                        id="content"
+                        name="content"
+                        class="form-textarea"
+                        placeholder="Start writing your note here..."
+                        required
+                        >{% if note %}{{ note.content }}{% endif %}</textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {%- if note -%}💾 Save Changes{%- else -%}✅ Create Note{%- endif -%}
+                    </button>
+                    <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>

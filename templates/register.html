@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register – Notepad App</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+
+            <div class="auth-logo">
+                <h1>📓 Notepad</h1>
+                <p>Create your free account</p>
+            </div>
+
+            <!-- Show error message if one exists (passed from main.py) -->
+            {% if error %}
+            <div class="alert-error">
+                ⚠ {{ error }}
+            </div>
+            {% endif %}
+
+            <!--
+                LEARNING NOTE: Registration Form
+                ==================================
+                method="post" sends the data to @app.post("/register").
+                The 3 input names match the 3 Form() parameters in main.py:
+                  - name="username"         → username: str = Form(...)
+                  - name="password"         → password: str = Form(...)
+                  - name="confirm_password" → confirm_password: str = Form(...)
+
+                FastAPI reads each field by matching the "name" attribute.
+            -->
+            <form method="post" action="/register">
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-input"
+                        placeholder="Choose a username"
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="Choose a password"
+                        required
+                        autocomplete="new-password"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                        class="form-input"
+                        placeholder="Repeat your password"
+                        required
+                        autocomplete="new-password"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">
+                    Create Account
+                </button>
+
+            </form>
+
+            <div class="auth-footer"> 
+                Already have an account? <a href="/login">Log in</a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

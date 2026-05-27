@@ -1,0 +1,471 @@
+/* ============================================================
+   NOTEPAD APP - style.css
+   Clean, modern UI using plain CSS (no frameworks)
+   ============================================================ */
+
+/* --- GOOGLE FONTS --- */
+/* We import two fonts:
+   - "Lora" for headings (elegant serif)
+   - "Inter" for body text (clean, readable) */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ============================================================
+   CSS VARIABLES (Custom Properties)
+   ============================================================
+   These are like variables in programming.
+   Define them once here, use them everywhere.
+   Makes changing the color scheme super easy! */
+:root {
+    --bg:           #F5F0E8;    /* warm off-white background */
+    --surface:      #FFFDF9;    /* slightly warmer white for cards */
+    --accent:       #2D6A4F;    /* deep forest green - primary color */
+    --accent-light: #52B788;    /* lighter green for hover states */
+    --danger:       #C1121F;    /* red for delete buttons */
+    --danger-light: #E63946;    /* lighter red for hover */
+    --text:         #1B1B1B;    /* near-black for main text */
+    --text-muted:   #6B705C;    /* muted olive-grey for secondary text */
+    --border:       #D4C9B0;    /* warm tan for borders */
+    --shadow:       0 2px 12px rgba(0,0,0,0.08);
+    --radius:       10px;
+}
+
+/* ============================================================
+   RESET & BASE STYLES
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;  /* padding/border included in element width */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+    background-color: var(--accent);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-brand {
+    font-family: 'Lora', serif;
+    font-size: 1.4rem;
+    color: #FFFDF9;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand span {
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.navbar-user {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+}
+
+.navbar-user strong {
+    color: white;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45,106,79,0.3);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: white;
+    border: 1.5px solid rgba(255,255,255,0.6);
+}
+
+.btn-outline:hover {
+    background-color: rgba(255,255,255,0.15);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-light);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-sm {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+/* ============================================================
+   PAGE WRAPPER & CONTAINER
+   ============================================================ */
+.page-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-family: 'Lora', serif;
+    font-size: 1.8rem;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.page-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+/* ============================================================
+   AUTH PAGES (Login & Register)
+   ============================================================ */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #2D6A4F 0%, #1B4332 100%);
+}
+
+.auth-card {
+    background-color: var(--surface);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 1.8rem;
+}
+
+.auth-logo h1 {
+    font-family: 'Lora', serif;
+    font-size: 2rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.auth-logo p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.3px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background-color: var(--surface);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+}
+
+.form-input::placeholder {
+    color: #B0A99A;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background-color: var(--surface);
+    resize: vertical;
+    min-height: 300px;
+    line-height: 1.7;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+}
+
+.form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+    align-items: center;
+}
+
+/* ============================================================
+   ERROR MESSAGE
+   ============================================================ */
+.alert-error {
+    background-color: #FFF0F0;
+    border: 1px solid #F5C2C7;
+    color: var(--danger);
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ============================================================
+   NOTES GRID (Dashboard)
+   ============================================================ */
+.notes-grid {
+    display: grid;
+    /* Auto-fill columns: each at least 260px wide, max 1fr */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
+}
+
+/* ============================================================
+   NOTE CARD
+   ============================================================ */
+.note-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.3rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.note-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.note-card-title {
+    font-family: 'Lora', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    /* Show at most 1 line, with "..." if too long */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.note-card-preview {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    /* Show at most 3 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+    line-height: 1.6;
+}
+
+.note-card-date {
+    font-size: 0.78rem;
+    color: #9A9584;
+    margin-top: 0.3rem;
+}
+
+.note-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   EMPTY STATE (when user has no notes)
+   ============================================================ */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-state-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-family: 'Lora', serif;
+    font-size: 1.3rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   EDITOR PAGE
+   ============================================================ */
+.editor-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.editor-title-input {
+    font-family: 'Lora', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================
+   @media queries run only on screens smaller than the given width.
+   This makes the layout work nicely on mobile phones. */
+@media (max-width: 600px) {
+    .navbar {
+        padding: 0 1rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .notes-grid {
+        grid-template-columns: 1fr;  /* single column on mobile */
+    }
+
+    .auth-card {
+        padding: 1.8rem 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        text-align: center;
+    }
+}
