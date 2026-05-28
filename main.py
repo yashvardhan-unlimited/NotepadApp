@@ -8,20 +8,22 @@
 #   and renders HTML pages using Jinja2 templates.
 # ============================================================
 
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
-from pymongo import MongoClient
-from bson import ObjectId
-from datetime import datetime
-import hashlib
-from pymongo.server_api import ServerApi
-from dotenv import load_dotenv
-import os
+from fastapi import FastAPI, Request, Form  # pyrefly: ignore 
+from fastapi.responses import RedirectResponse  # pyrefly: ignore 
+from fastapi.templating import Jinja2Templates  # pyrefly: ignore 
+from fastapi.staticfiles import StaticFiles  # pyrefly: ignore 
+from starlette.middleware.sessions import SessionMiddleware  # pyrefly: ignore 
+from pymongo import MongoClient  # pyrefly: ignore 
+from bson import ObjectId  # pyrefly: ignore 
+from datetime import datetime  # pyrefly: ignore 
+import hashlib  # pyrefly: ignore 
+from pymongo.server_api import ServerApi   # pyrefly: ignore 
+from dotenv import load_dotenv  # pyrefly: ignore 
+import os  # pyrefly: ignore 
+import certifi  # pyrefly: ignore 
+from openai import OpenAI  # pyrefly: ignore 
 
-load_dotenv()
+load_dotenv() 
 
 # Password hashing functions using bcrypt. ===================
 
@@ -29,6 +31,90 @@ def hash(input_string):
     return hashlib.sha256(input_string.encode()).hexdigest()
 
 # ============================================================
+
+clientAI = OpenAI(
+    base_url="https://api.groq.com/openai/v1",
+    api_key=os.getenv("GROQ_API_KEY"),
+)
+
+def AI_text(user_note):
+
+    messages = [
+
+        {
+            "role": "system",
+            "content": """
+You are an intelligent daily task organizer AI.
+
+Your job is to:
+- Convert messy daily notes into clean task lists
+- Correct grammar and spelling mistakes
+- Improve sentence structure
+- Keep the original meaning unchanged
+- Make tasks concise and readable
+- Use proper capitalization
+- Add suitable emojis naturally
+- Organize tasks professionally
+
+Rules:
+- Always respond in markdown
+- Always create a heading
+- Use bullet points
+- Keep tasks short and clear
+- Add relevant emojis based on the task
+- Do not add extra explanations
+- Make the output visually pleasing
+"""
+        },
+
+        # Few-shot example 1
+        {
+            "role": "user",
+            "content": "i have to go to gym then study maths and then eat dinner"
+        },
+
+        {
+            "role": "assistant",
+            "content": """
+# 📋 My Tasks for Today
+
+- 💪 Go to the gym
+- 📚 Study mathematics
+- 🍽️ Eat dinner
+"""
+        },
+
+        # Few-shot example 2
+        {
+            "role": "user",
+            "content": "complete python project and call rahul after coming home"
+        },
+
+        {
+            "role": "assistant",
+            "content": """
+# 📋 My Tasks for Today
+
+- 💻 Complete the Python project
+- 📞 Call Rahul after coming home
+"""
+        },
+
+        # Actual user input
+        {
+            "role": "user",
+            "content": user_note
+        }
+
+    ]
+
+    response = clientAI.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=messages,
+        temperature=0.5
+    )
+
+    return response.choices[0].message.content 
 
 
 # ============================================================
@@ -80,12 +166,11 @@ templates = Jinja2Templates(directory="templates")
 #   - Mac:     Run "brew services start mongodb-community"
 #   - Linux:   Run "sudo systemctl start mongod"
 
-db_password = os.getenv("MONGO_DB_PASSWORD")
-uri = f"mongodb+srv://devyashg8_db_user:{db_password}@yashvardhan-gupta.wdzlvfo.mongodb.net/?appName=Yashvardhan-Gupta"
+uri = os.getenv("MONGO_URI")
 
 # Create a new client and connect to the server
-client = MongoClient(uri)
-
+client = MongoClient(uri, tlsCAFile=certifi.where())
+  
 
 # Select (or create) the database named "notepad_db"
 # MongoDB creates it automatically when you first insert data
@@ -333,7 +418,8 @@ def new_note_page(request: Request):
 def create_note(
     request: Request,
     title: str = Form(...),
-    content: str = Form(...)
+    content: str = Form(...),
+    color: str = Form("#FFFDF9")
 ):
     user = get_current_user(request)
     if not user:
@@ -349,6 +435,7 @@ def create_note(
         "owner": user,
         "title": title,
         "content": content,
+        "color": color,
         "created": datetime.now().strftime("%d %b %Y, %I:%M %p")
         # Example output: "24 Jul 2025, 03:45 PM"
     })
@@ -406,7 +493,8 @@ def update_note(
     request: Request,
     note_id: str,
     title: str = Form(...),
-    content: str = Form(...)
+    content: str = Form(...),
+    color: str = Form("#FFFDF9")
 ):
     user = get_current_user(request)
     if not user:
@@ -421,11 +509,45 @@ def update_note(
         {"_id": ObjectId(note_id), "owner": user},  # filter
         {"$set": {                                   # update
             "title": title,
-            "content": content
+            "content": content,
+            "color": color
         }}
     )
 
     return RedirectResponse(url="/dashboard", status_code=302)
+
+
+# AI Text feature ============================================
+
+@app.post("/note/ai_text")
+def ai_text(
+    request: Request,
+    title: str = Form(...),
+    content: str = Form(...),
+    note_id: str = Form(None),
+    color: str = Form("#FFFDF9")
+):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    ai_response = AI_text(content)
+
+    note_data = {"title": title, "color": color}
+    if note_id:
+        note_data["_id"] = note_id
+
+    return templates.TemplateResponse(
+        request = request,
+        name = "editor.html",
+        context = {
+            "request": request,
+            "username": user,
+            "note": note_data,
+            "ai_response": ai_response
+        }
+    )
+
 
 
 # ============================================================
@@ -476,6 +598,7 @@ def logout(request: Request):
 # reload=True means the server restarts when you save changes (great for development!)
 
 if __name__ == "__main__":
+    # pyrefly: ignore [missing-import]
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 

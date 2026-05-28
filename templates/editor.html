@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {#
-        LEARNING NOTE: Dynamic page title
+        LEARNING NOTE: Dynamic page title 
         ===================================
         We use Jinja2 to set the page title dynamically.
         If we're editing an existing note → show its title.
@@ -15,10 +15,10 @@
         "{% else %}" handles the "new note" case (note=None).
     #}
     <title>
-        {% if note %}Edit: {{ note.title }}{% else %}New Note{% endif %} – Notepad App
+        {% if note and note.get('_id') %}Edit: {{ note.title }}{% else %}New Note{% endif %} – Notepad App
     </title>
 
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=1.1">
 </head>
 <body>
 
@@ -38,10 +38,10 @@
         <div class="page-header">
             <div>
                 <h2 class="page-title">
-                    {% if note %}Edit Note{% else %}New Note{% endif %}
+                    {% if note and note.get('_id') %}Edit Note{% else %}New Note{% endif %}
                 </h2>
                 <p class="page-subtitle">
-                    {% if note %}
+                    {% if note and note.get('_id') %}
                         Last saved: {{ note.created }}
                     {% else %}
                         Fill in the title and content below
@@ -68,8 +68,10 @@
             #}
             <form
                 method="post"
-                action="{% if note %}/note/edit/{{ note._id }}{% else %}/note/new{% endif %}"
+                action="{% if note and note.get('_id') %}/note/edit/{{ note._id }}{% else %}/note/new{% endif %}"
             >
+                <input type="hidden" name="note_id" value="{% if note and note.get('_id') %}{{ note._id }}{% endif %}">
+                <input type="hidden" name="color" id="note-color" value="{% if note and note.color %}{{ note.color }}{% else %}#FFFDF9{% endif %}">
 
                 <div class="form-group">
                     <label class="form-label" for="title">Note Title</label>
@@ -80,21 +82,20 @@
                         class="form-input editor-title-input"
                         placeholder="Give your note a title..."
                         required
-                        
-                        
-                        {% if note %}value="{{ note.title }}"{% endif %}
+                        {% if note and note.title %}value="{{ note.title }}"{% endif %}
                     >
-                    {# LEARNING NOTE: Pre-filling the form
-                            =====================================
-                            When editing an existing note, we want the form
-                            to already contain the note's current data.
+                </div>
 
-                            "value=" sets the initial value of the input field.
-
-                            {% if note %}{{ note.title }}{% endif %}
-                            → If note exists, put note.title as the pre-filled value.
-                            → If it's a new note, leave value empty (no value attribute).
-                         #}
+                <div class="form-group">
+                    <div class="color-picker">
+                        <span class="color-picker-label">Note Color:</span>
+                        <!-- Choice of 5 colours -->
+                        <div class="color-option" style="background-color: #FFFDF9;" data-color="#FFFDF9"></div>
+                        <div class="color-option" style="background-color: #FFF5E1;" data-color="#FFF5E1"></div> <!-- Light Yellow -->
+                        <div class="color-option" style="background-color: #E3F2FD;" data-color="#E3F2FD"></div> <!-- Light Blue -->
+                        <div class="color-option" style="background-color: #E8F5E9;" data-color="#E8F5E9"></div> <!-- Light Green -->
+                        <div class="color-option" style="background-color: #FCE4EC;" data-color="#FCE4EC"></div> <!-- Light Pink -->
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -118,14 +119,19 @@
                         class="form-textarea"
                         placeholder="Start writing your note here..."
                         required
-                        >{% if note %}{{ note.content }}{% endif %}</textarea>
+                        >{% if ai_response %}{{ ai_response }}{% elif note and note.content %}{{ note.content }}{% endif %}</textarea>
                 </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
-                        {%- if note -%}💾 Save Changes{%- else -%}✅ Create Note{%- endif -%}
+                        {%- if note and note.get('_id') -%}💾 Save Changes{%- else -%}✅ Create Note{%- endif -%}
                     </button>
+                    
                     <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+
+                    <button type="submit" formaction="/note/ai_text" class="btn btn-primary">
+                        🤖 AI Formatter
+                    </button> 
                 </div>
 
             </form>
@@ -133,5 +139,38 @@
 
     </div>
 
+    <script>
+        const colorOptions = document.querySelectorAll('.color-option');
+        const colorInput = document.getElementById('note-color');
+        const textArea = document.getElementById('content');
+        const editorCard = document.querySelector('.editor-card');
+
+        // Set initial selected state based on hidden input
+        const initialColor = colorInput.value || '#FFFDF9';
+        textArea.style.backgroundColor = initialColor;
+        editorCard.style.backgroundColor = initialColor;
+        
+        colorOptions.forEach(opt => {
+            if (opt.dataset.color === initialColor) {
+                opt.classList.add('selected');
+            }
+        });
+
+        colorOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selected class from all
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+                // Add to clicked
+                option.classList.add('selected');
+                // Get color
+                const color = option.dataset.color;
+                // Update hidden input
+                colorInput.value = color;
+                // Update backgrounds
+                textArea.style.backgroundColor = color;
+                editorCard.style.backgroundColor = color;
+            });
+        });
+    </script>
 </body>
 </html>
