@@ -89,7 +89,7 @@
                                 "truncate(120)" cuts text to ~120 characters and adds "..."
                                 This is a built-in Jinja2 filter.
                             -->
-                    {{ note.content | truncate(120) }}
+                    {{ note.content | striptags | truncate(120) }}
                 </div>
 
                 <div class="note-card-date">

@@ -294,7 +294,7 @@ body {
     line-height: 30px;
     background-image: linear-gradient(transparent, transparent 29px, #D4C9B0 29px, #D4C9B0 30px);
     background-size: 100% 30px;
-    padding-top: 8px; /* align text to line */
+    background-origin: content-box;
     background-attachment: local;
 
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;

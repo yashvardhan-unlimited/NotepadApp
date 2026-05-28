@@ -86,8 +86,8 @@
                     >
                 </div>
 
-                <div class="form-group">
-                    <div class="color-picker">
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="color-picker" style="margin-bottom: 0;">
                         <span class="color-picker-label">Note Color:</span>
                         <!-- Choice of 5 colours -->
                         <div class="color-option" style="background-color: #FFFDF9;" data-color="#FFFDF9"></div>
@@ -96,30 +96,20 @@
                         <div class="color-option" style="background-color: #E8F5E9;" data-color="#E8F5E9"></div> <!-- Light Green -->
                         <div class="color-option" style="background-color: #FCE4EC;" data-color="#FCE4EC"></div> <!-- Light Pink -->
                     </div>
+                    <button type="button" id="add-checkbox-btn" class="btn btn-outline btn-sm" style="color: var(--text); border-color: var(--border);">
+                        ✅ Add Checkbox
+                    </button>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="content">Content</label>
-                    {#
-                        LEARNING NOTE: Pre-filling a textarea
-                        ======================================
-                        Textareas don't use the "value" attribute like regular inputs.
-                        Instead, you put the text BETWEEN the opening and closing tags:
-                            <textarea>your text here</textarea>
-
-                        So we do: {% if note %}{{ note.content }}{% endif %}
-                        inside the textarea tags to pre-fill it when editing.
-
-                        Note: There's no space/newline before the content
-                        to avoid adding extra whitespace at the beginning.
-                    #}
-                    <textarea
+                    <input type="hidden" name="content" id="hidden-content">
+                    <div
                         id="content"
-                        name="content"
                         class="form-textarea"
-                        placeholder="Start writing your note here..."
-                        required
-                        >{% if ai_response %}{{ ai_response }}{% elif note and note.content %}{{ note.content }}{% endif %}</textarea>
+                        contenteditable="true"
+                        style="min-height: 300px; overflow-y: auto;"
+                        >{% if ai_response %}{{ ai_response|safe }}{% elif note and note.content %}{{ note.content|safe }}{% endif %}</div>
                 </div>
 
                 <div class="form-actions">
@@ -144,11 +134,46 @@
         const colorInput = document.getElementById('note-color');
         const textArea = document.getElementById('content');
         const editorCard = document.querySelector('.editor-card');
+        const titleInput = document.getElementById('title');
+        const hiddenContent = document.getElementById('hidden-content');
+        const form = document.querySelector('form');
+        const addCheckboxBtn = document.getElementById('add-checkbox-btn');
+
+        // Sync contenteditable to hidden input on submit
+        form.addEventListener('submit', () => {
+            hiddenContent.value = textArea.innerHTML;
+        });
+
+        // Add checkbox logic
+        addCheckboxBtn.addEventListener('click', () => {
+            textArea.focus();
+            const checkboxHTML = `<div style="display: flex; align-items: flex-start; gap: 8px;"><input type="checkbox" class="task-checkbox" style="width: 18px; height: 18px; cursor: pointer; margin-top: 6px;"><span class="task-text" style="line-height: 30px;">Task...</span></div>`;
+            document.execCommand('insertHTML', false, checkboxHTML);
+        });
+
+        // Strikethrough logic on checkbox click
+        textArea.addEventListener('change', (e) => {
+            if (e.target && e.target.classList.contains('task-checkbox')) {
+                const textSpan = e.target.nextElementSibling;
+                if (textSpan && textSpan.classList.contains('task-text')) {
+                    if (e.target.checked) {
+                        textSpan.style.textDecoration = 'line-through';
+                        textSpan.style.opacity = '0.6';
+                        e.target.setAttribute('checked', 'checked'); // Persist state
+                    } else {
+                        textSpan.style.textDecoration = 'none';
+                        textSpan.style.opacity = '1';
+                        e.target.removeAttribute('checked'); // Persist state
+                    }
+                }
+            }
+        });
 
         // Set initial selected state based on hidden input
         const initialColor = colorInput.value || '#FFFDF9';
         textArea.style.backgroundColor = initialColor;
         editorCard.style.backgroundColor = initialColor;
+        titleInput.style.backgroundColor = initialColor;
         
         colorOptions.forEach(opt => {
             if (opt.dataset.color === initialColor) {
@@ -169,6 +194,7 @@
                 // Update backgrounds
                 textArea.style.backgroundColor = color;
                 editorCard.style.backgroundColor = color;
+                titleInput.style.backgroundColor = color;
             });
         });
     </script>
