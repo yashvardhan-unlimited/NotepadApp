@@ -403,6 +403,13 @@ def new_note_page(request: Request):
 # ============================================================
 # ROUTE: Create Note (POST) - Save a new note to MongoDB
 # ============================================================
+# LEARNING NOTE (HTTP Methods):
+#   We use @app.post here instead of @app.get. 
+#   GET requests are just for "reading" or "viewing" data.
+#   POST requests are used to safely send data (like a form) 
+#   to CREATE or UPDATE something on the server.
+#
+#   The form data is automatically extracted using FastAPI's Form(...)
 
 @app.post("/note/new")
 def create_note(
@@ -416,11 +423,15 @@ def create_note(
         return RedirectResponse(url="/login", status_code=302)
 
     # --- Insert the new note into MongoDB ---
-    # Each note stores:
-    #   owner    → which user it belongs to
-    #   title    → the note title
-    #   content  → the note body
-    #   created  → when it was created (formatted nicely for display)
+    # LEARNING NOTE (MongoDB):
+    #   insert_one() takes a Python dictionary and stores it as a 
+    #   JSON-like document in the database.
+    #   Each note stores:
+    #     owner    → which user it belongs to (links note to user)
+    #     title    → the note title
+    #     content  → the note body (HTML string)
+    #     color    → background color of the note
+    #     created  → when it was created (formatted nicely for display)
     notes_collection.insert_one({
         "owner": user,
         "title": title,
@@ -491,10 +502,13 @@ def update_note(
         return RedirectResponse(url="/login", status_code=302)
 
     # --- Update the note in MongoDB ---
-    # update_one() finds ONE document and updates it.
-    # First argument: the filter (which document to update)
-    # Second argument: the update operation
-    # "$set" means: set these specific fields (don't overwrite the whole document)
+    # LEARNING NOTE (MongoDB Updates):
+    #   update_one() finds ONE document matching the filter and updates it.
+    #   First argument: the filter (which document to update)
+    #     {"_id": ObjectId(note_id), "owner": user}
+    #   Second argument: the update operation
+    #     "$set" is a special MongoDB operator that means: 
+    #     "set these specific fields, but leave the rest of the document untouched!"
     notes_collection.update_one(
         {"_id": ObjectId(note_id), "owner": user},  # filter
         {"$set": {                                   # update
@@ -554,8 +568,11 @@ def delete_note(request: Request, note_id: str):
         return RedirectResponse(url="/login", status_code=302)
 
     # --- Delete the note from MongoDB ---
-    # delete_one() removes the first document matching the filter.
-    # We include "owner": user for security — only delete if it belongs to this user.
+    # LEARNING NOTE (MongoDB Deletion):
+    #   delete_one() permanently removes the first document matching the filter.
+    #   We include "owner": user as a crucial security check!
+    #   If an attacker tries to guess someone else's note_id, the deletion 
+    #   will fail because the "owner" won't match their username.
     notes_collection.delete_one({
         "_id": ObjectId(note_id),
         "owner": user   # Security: can't delete someone else's note
