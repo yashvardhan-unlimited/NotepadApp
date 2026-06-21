@@ -107,6 +107,16 @@ Your job is to:
     return response.choices[0].message.content 
 
 
+# ===========================================================
+# AI assitant
+# ===========================================================
+# RAG based system
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+
+
+
+
 # ============================================================
 # APP INITIALIZATION
 # ============================================================
