@@ -113,6 +113,29 @@ Your job is to:
 # RAG based system
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
+from langchain_core.documents import Document
+from langchain_core.vectorstores import Chroma
+from langchain_core.embeddings import OpenAIEmbeddings
+from langchain_core.retrievers import ContextualCompressionRetriever
+from langchain_core.retrievers import SemanticRetriever
+from langchain_core.retrievers import BM25Retriever
+from langchain_core.retrievers import TFIDFRetriever
+from langchain_core.retrievers import BM25Retriever
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
